@@ -12,7 +12,7 @@
 #include "Arduino.h"
 #include "ArduinoJson.h"
 #include "AsyncJson.h"
-#include "sensesp_app.h"
+#include "sensesp.h"
 #include "system/configurable.h"
 
 // Include the web UI stored in PROGMEM space
@@ -26,8 +26,9 @@
 #define HTTP_SERVER_PORT 80
 #endif
 
-HTTPServer::HTTPServer(std::function<void()> reset_device) {
+HTTPServer::HTTPServer(std::function<void()> reset_device, std::function<void(AsyncWebServerRequest* request)> handle_info) {
   this->reset_device = reset_device;
+  this->handle_info = handle_info;
   server = new AsyncWebServer(HTTP_SERVER_PORT);
   using std::placeholders::_1;
 
@@ -123,7 +124,7 @@ HTTPServer::HTTPServer(std::function<void()> reset_device) {
              std::bind(&HTTPServer::handle_device_reset, this, _1));
   server->on("/device/restart", HTTP_GET,
              std::bind(&HTTPServer::handle_device_restart, this, _1));
-  server->on("/info", HTTP_GET, std::bind(&HTTPServer::handle_info, this, _1));
+  server->on("/info", HTTP_GET, this->handle_info);
 }
 
 void HTTPServer::handle_not_found(AsyncWebServerRequest* request) {
@@ -204,24 +205,4 @@ void HTTPServer::handle_device_reset(AsyncWebServerRequest* request) {
 void HTTPServer::handle_device_restart(AsyncWebServerRequest* request) {
   request->send(200, "text/plain", "OK, restarting\n");
   app.onDelay(50, []() { ESP.restart(); });
-}
-
-void HTTPServer::handle_info(AsyncWebServerRequest* request) {
-  auto* response = request->beginResponseStream("text/plain");
-
-  response->setCode(200);
-  response->printf("Name: %s, build at %s %s\n",
-                   sensesp_app->get_hostname().c_str(), __DATE__, __TIME__);
-
-  response->printf("MAC: %s\n", WiFi.macAddress().c_str());
-  response->printf("WiFi signal: %d\n", WiFi.RSSI());
-
-  response->printf("SSID: %s\n", WiFi.SSID().c_str());
-
-  response->printf("Signal K server address: %s\n",
-                   sensesp_app->ws_client_->get_server_address().c_str());
-  response->printf("Signal K server port: %d\n",
-                   sensesp_app->ws_client_->get_server_port());
-
-  request->send(response);
 }

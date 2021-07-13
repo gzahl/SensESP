@@ -53,6 +53,7 @@ class SensESPApp {
   void setup();
   void enable();
   void reset();
+  void handle_info(AsyncWebServerRequest* request);
   String get_hostname();
 
   template <typename T>

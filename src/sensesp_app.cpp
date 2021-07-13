@@ -6,6 +6,7 @@
 #include "SPIFFS.h"
 #endif
 
+#include <functional>
 #include "net/discovery.h"
 #include "net/networking.h"
 #include "net/ota.h"
@@ -87,7 +88,7 @@ void SensESPApp::setup() {
 
   // create the HTTP server
 
-  this->http_server_ = new HTTPServer(std::bind(&SensESPApp::reset, this));
+  this->http_server_ = new HTTPServer(std::bind(&SensESPApp::reset, this), std::bind(&SensESPApp::handle_info, this, std::placeholders::_1));
 
   // create the websocket client
 
@@ -198,6 +199,26 @@ void SensESPApp::reset() {
   networking_->reset_settings();
   SPIFFS.format();
   app.onDelay(1000, []() { ESP.restart(); delay(1000); });
+}
+
+void SensESPApp::handle_info(AsyncWebServerRequest* request) {
+  auto* response = request->beginResponseStream("text/plain");
+
+  response->setCode(200);
+  response->printf("Name: %s, build at %s %s\n",
+                   get_hostname().c_str(), __DATE__, __TIME__);
+
+  response->printf("MAC: %s\n", WiFi.macAddress().c_str());
+  response->printf("WiFi signal: %d\n", WiFi.RSSI());
+
+  response->printf("SSID: %s\n", WiFi.SSID().c_str());
+
+  response->printf("Signal K server address: %s\n",
+                   ws_client_->get_server_address().c_str());
+  response->printf("Signal K server port: %d\n",
+                   ws_client_->get_server_port());
+
+  request->send(response);
 }
 
 String SensESPApp::get_hostname() { return networking_->get_hostname()->get(); }
