@@ -1,6 +1,6 @@
 #include "enable.h"
 
-#include "sensesp_app.h"
+#include "sensesp.h"
 
 std::priority_queue<Enable*> Enable::enableList;
 

@@ -1,7 +1,6 @@
 #ifndef _value_consumer_H_
 #define _value_consumer_H_
 
-#include <ArduinoJson.h>
 #include <stdint.h>
 #include "sensesp.h"
 template <typename T>
