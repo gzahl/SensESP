@@ -17,7 +17,7 @@
  */
 
 // y = k * 1/n * \sum_k=1^n(x_k)
-template <typename T>
+template <typename T, typename U>
 class MovingAverage : public SymmetricTransform<T> {
  public:
   /**
@@ -31,7 +31,7 @@ class MovingAverage : public SymmetricTransform<T> {
    * @param config_path The path used to configure this transform in the Config
    * UI.
    * */
-  MovingAverage(int sample_size, T multiplier = 1.0, String config_path = "");
+  MovingAverage(int sample_size, U multiplier = 1.0, String config_path = "");
   virtual void set_input(T input, uint8_t inputChannel = 0) override;
   virtual void get_configuration(JsonObject& doc) override;
   virtual bool set_configuration(const JsonObject& config) override;
@@ -41,14 +41,14 @@ class MovingAverage : public SymmetricTransform<T> {
   std::vector<T> buf_;
   int ptr_ = 0;
   int sample_size_;
-  T multiplier_;
+  U multiplier_;
   bool initialized_;
 };
 
-template <typename T>
-MovingAverage<T>::MovingAverage(int sample_size, T multiplier,
+template <typename T, typename U>
+MovingAverage<T, U>::MovingAverage(int sample_size, U multiplier,
                                 String config_path)
-    : NumericTransform(config_path),
+    : SymmetricTransform<T>(config_path),
       sample_size_{sample_size},
       multiplier_{multiplier} {
   buf_.resize(sample_size_, 0);
@@ -56,8 +56,8 @@ MovingAverage<T>::MovingAverage(int sample_size, T multiplier,
   this->load_configuration();
 }
 
-template <typename T>
-void MovingAverage<T>::set_input(T input, uint8_t inputChannel) {
+template <typename T, typename U>
+void MovingAverage<T, U>::set_input(T input, uint8_t inputChannel) {
   // So the first value to be included in the average doesn't default to 0.0
   if (!initialized_) {
     buf_.assign(sample_size_, input);
@@ -76,14 +76,14 @@ void MovingAverage<T>::set_input(T input, uint8_t inputChannel) {
   this->notify();
 }
 
-template <typename T>
-void MovingAverage<T>::get_configuration(JsonObject& root) {
+template <typename T, typename U>
+void MovingAverage<T, U>::get_configuration(JsonObject& root) {
   root["multiplier"] = multiplier_;
   root["sample_size"] = sample_size_;
 }
 
-template <typename T>
-String MovingAverage<T>::get_config_schema() {
+template <typename T, typename U>
+String MovingAverage<T, U>::get_config_schema() {
   const char SCHEMA[] PROGMEM = R"({
     "type": "object",
     "properties": {
@@ -94,8 +94,8 @@ String MovingAverage<T>::get_config_schema() {
   return FPSTR(SCHEMA);
 }
 
-template <typename T>
-bool MovingAverage<T>::set_configuration(const JsonObject& config) {
+template <typename T, typename U>
+bool MovingAverage<T, U>::set_configuration(const JsonObject& config) {
   String expected[] = {"multiplier", "sample_size"};
   for (auto str : expected) {
     if (!config.containsKey(str)) {
