@@ -18,7 +18,7 @@
 
 // y = k * 1/n * \sum_k=1^n(x_k)
 template<class T>
-class MovingAverage : public NumericTransform {
+class MovingAverage : public SymmetricTransform<T> {
  public:
   /**
    * @param sample_size The number of most recent values you want to average for your
