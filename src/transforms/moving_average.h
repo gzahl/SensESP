@@ -17,7 +17,7 @@
  */
 
 // y = k * 1/n * \sum_k=1^n(x_k)
-template<class T>
+template<typename T>
 class MovingAverage : public SymmetricTransform<T> {
  public:
   /**
