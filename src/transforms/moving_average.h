@@ -17,6 +17,7 @@
  */
 
 // y = k * 1/n * \sum_k=1^n(x_k)
+template<class T>
 class MovingAverage : public NumericTransform {
  public:
   /**
@@ -29,17 +30,17 @@ class MovingAverage : public NumericTransform {
    *
    * @param config_path The path used to configure this transform in the Config UI.
    * */
-  MovingAverage(int sample_size, float multiplier = 1.0, String config_path = "");
-  virtual void set_input(float input, uint8_t inputChannel = 0) override;
+  MovingAverage(int sample_size, T multiplier = 1.0, String config_path = "");
+  virtual void set_input(T input, uint8_t inputChannel = 0) override;
   virtual void get_configuration(JsonObject& doc) override;
   virtual bool set_configuration(const JsonObject& config) override;
   virtual String get_config_schema() override;
 
  private:
-  std::vector<float> buf_;
+  std::vector<T> buf_;
   int ptr_ = 0;
   int sample_size_;
-  float multiplier_;
+  T multiplier_;
   bool initialized_;
 };
 

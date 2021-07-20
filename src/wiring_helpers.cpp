@@ -47,7 +47,7 @@ void setup_fuel_flow_meter(int inflow_pin, int return_flow_pin) {
   diff->connect_from(freqIn, freqOut)
       ->connect_to(new SKOutputNumber("propulsion.main.fuel.rate",
                                       "/fuelflow/fuel/rate/sk"))
-      ->connect_to(new MovingAverage(
+      ->connect_to(new MovingAverage<float>(
           10, 1.,
           "/fuelflow/fuel/average/calibrate"))  // this is the same as above,
                                                 // but averaged over 10 s

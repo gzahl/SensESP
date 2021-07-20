@@ -2,14 +2,16 @@
 
 // MovingAverage
 
-MovingAverage::MovingAverage(int sample_size, float multiplier, String config_path)
+template<class T>
+MovingAverage<T>::MovingAverage(int sample_size, T multiplier, String config_path)
     : NumericTransform(config_path), sample_size_{sample_size}, multiplier_{multiplier} {
   buf_.resize(sample_size_, 0);
   initialized_ = false;
   load_configuration();
 }
 
-void MovingAverage::set_input(float input, uint8_t inputChannel) {
+template<class T>
+void MovingAverage<T>::set_input(T input, uint8_t inputChannel) {
   // So the first value to be included in the average doesn't default to 0.0
   if (!initialized_) {
     buf_.assign(sample_size_, input);
@@ -28,7 +30,8 @@ void MovingAverage::set_input(float input, uint8_t inputChannel) {
   notify();
 }
 
-void MovingAverage::get_configuration(JsonObject& root) {
+template<class T>
+void MovingAverage<T>::get_configuration(JsonObject& root) {
   root["multiplier"] = multiplier_;
   root["sample_size"] = sample_size_;
 }
@@ -41,9 +44,11 @@ static const char SCHEMA[] PROGMEM = R"({
     }
   })";
 
-String MovingAverage::get_config_schema() { return FPSTR(SCHEMA); }
+template<class T>
+String MovingAverage<T>::get_config_schema() { return FPSTR(SCHEMA); }
 
-bool MovingAverage::set_configuration(const JsonObject& config) {
+template<class T>
+bool MovingAverage<T>::set_configuration(const JsonObject& config) {
   String expected[] = {"multiplier", "sample_size"};
   for (auto str : expected) {
     if (!config.containsKey(str)) {
